@@ -149,14 +149,8 @@ end
 ###############################################################################
 
 function +(p::LaurentPolyWrap, q::LaurentPolyWrap)
-   if p.mindeg > q.mindeg
-      p, q = q, p
-   end
-   p_, q_ = p.poly, q.poly
-   if p.mindeg < q.mindeg
-      q_ = shift_left(q_, q.mindeg - p.mindeg)
-   end
-   LaurentPolyWrap(parent(p), p_ + q_, p.mindeg)
+  check_parent(p, q)
+  return add!(zero(p), p, q)
 end
 
 -(p::LaurentPolyWrap, q::LaurentPolyWrap) = p + (-q) # TODO: optimize
@@ -369,12 +363,37 @@ function mul!(z::LaurentPolyWrap{T}, a::LaurentPolyWrap{T}, b::LaurentPolyWrap{T
    return z
 end
 
-function add!(c::LaurentPolyWrap{T}, a::LaurentPolyWrap{T}, b::LaurentPolyWrap{T}) where T
-   # TODO: optimize
-   d = a + b
-   c.poly = d.poly
-   c.mindeg = d.mindeg
-   c
+function add!(x::LaurentPolyWrap{T}, y::LaurentPolyWrap{T}) where T
+  if x.mindeg < y.mindeg
+    y.poly = shift_left!(y.poly, y.mindeg - x.mindeg)
+    x.poly = add!(x.poly, y.poly)
+    y.poly = shift_right!(y.poly, y.mindeg - x.mindeg)
+  else
+    x.poly = shift_left!(x.poly, x.mindeg - y.mindeg)
+    x.poly = add!(x.poly, y.poly)
+    x.mindeg = y.mindeg
+  end
+  return x
+end
+
+function add!(z::LaurentPolyWrap{T}, x::LaurentPolyWrap{T}, y::LaurentPolyWrap{T}) where T 
+  if z === x
+    return add!(x, y)
+  elseif z === y
+    return add!(y, x)
+  end
+  
+  if x.mindeg < y.mindeg
+    z.poly = shift_left!(z.poly, y.poly, y.mindeg - x.mindeg)
+    z.poly = add!(z.poly, x.poly)
+    z.mindeg = x.mindeg
+  else
+    z.poly = shift_left!(z.poly, x.poly, x.mindeg - y.mindeg)
+    z.poly = add!(z.poly, y.poly)
+    z.mindeg = y.mindeg
+  end
+  
+  return z
 end
 
 ###############################################################################

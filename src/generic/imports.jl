@@ -203,6 +203,7 @@ import ..AbstractAlgebra: set_length!
 import ..AbstractAlgebra: set_precision!
 import ..AbstractAlgebra: set_valuation!
 import ..AbstractAlgebra: shift_left
+import ..AbstractAlgebra: shift_left!
 import ..AbstractAlgebra: shift_right
 import ..AbstractAlgebra: snf
 import ..AbstractAlgebra: sqrt
